@@ -26,12 +26,16 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 // }
 
 function blog_maker(){
-   $domain = 'multisitetwo.local/';
-   $path = 'bard';
-   $title = 'The Bard is set';
-   $user_id = 12;
-   $options = array( 'public' => 1 );
-   wpmu_create_blog($domain, $path, $title, $user_id , $options);
+   $args = array(
+      'domain' => 'multsitetwo.local',
+      'path' => 'fugu',
+      // 'network_id' => '',
+      // 'registered' => '',
+      'user_id' => 12,
+      'title' => 'Team Fish Heads',      
+   );
+   $new_site = wp_insert_site($args);
+   var_dump($new_site);
 }
 
 add_shortcode( 'make-site', 'blog_maker' );
