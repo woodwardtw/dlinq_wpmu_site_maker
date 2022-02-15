@@ -25,20 +25,61 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 //     wp_enqueue_style( 'prefix-main-css', plugin_dir_url( __FILE__) . 'css/prefix-main.css');
 // }
 
-function blog_maker(){
-   $args = array(
+function dlinq_blog_maker(){
+   $domain =     $current_network = get_network();
+   //var_dump($current_network);
+   $team = 'Team Shrimp Heads';
+   $path = $current_network->domain . '/' . sanitize_title( $team ) . '/';
+   $user_id = 13;
+   $sites = get_sites(array( 'fields' => 'ids', 'path' => '/team-shrimp-heads/'))[0];
+   var_dump($sites);
+   if($sites > 0){
+      $blog_id = $sites;
+      add_user_to_blog($blog_id, 11, 'administrator');
+   } else {
+      $args = array(
       'domain' => 'multsitetwo.local',
-      'path' => 'fugu',
+      'path' => sanitize_title($team),
       // 'network_id' => '',
       // 'registered' => '',
-      'user_id' => 12,
-      'title' => 'Team Fish Heads',      
+      'user_id' => $user_id,
+      'title' => $team,      
    );
    $new_site = wp_insert_site($args);
-   var_dump($new_site);
+   return 'foo';
+   }
+   
 }
 
-add_shortcode( 'make-site', 'blog_maker' );
+add_shortcode( 'make-site', 'dlinq_blog_maker' );
+
+
+/**
+ * Retrieves a sites ID given its (subdomain or directory) slug.
+ *
+ * @since MU
+ * @since 4.7.0 Converted to use get_sites().
+ *
+ * @param string $slug A site's slug.
+ * @return int|null The site ID, or null if no site is found for the given slug.
+ */
+function dlinq_get_id_from_blogname($slug){
+    $current_network = get_network();
+    $slug = trim($slug, '/');
+    if (is_subdomain_install()) {
+        $domain = $slug . '.' . preg_replace('|^www\\.|', '', $current_network->domain);
+        $path = $current_network->path;
+    } else {
+        $domain = $current_network->domain;
+        $path = $current_network->path . $slug . '/';
+    }
+    $site_ids = get_sites(array('number' => 1, 'fields' => 'ids', 'domain' => $domain, 'path' => $path));
+
+    if (empty($site_ids)) {
+        return null;
+    }
+    return array_shift($site_ids);
+}
 
 //blog_maker();
 
