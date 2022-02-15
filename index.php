@@ -22,11 +22,16 @@ function dlinq_team_added( $form, $entry_id, $original_entry){
 add_action( 'gform_after_update_entry_4', 'dlinq_team_added', 10, 3 );
 
 //after post creation write the created post ID to the form
-add_action( 'gform_after_create_post', 'dlinq_save_post_id', 10, 3 );
+add_action( 'gform_advancedpostcreation_post_after_creation', 'dlinq_save_post_id', 10, 4 );
 
-function dlinq_save_post_id( $post_id, $entry, $form){
-   //23
-   rgar( $entry, '23' ) = $post_id;
+function dlinq_save_post_id( $post_id, $feed, $entry, $form){
+       
+    $entry['23'] = $post_id;
+
+    // Save the update
+    $updated = GFAPI::update_entry( $entry );
+    var_dump($updated);
+
 }
 
 function dlinq_blog_maker(){
