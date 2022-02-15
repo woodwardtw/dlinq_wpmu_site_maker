@@ -1,6 +1,6 @@
 <?php 
 /*
-Plugin Name: DLINQ WPMU Site Maker
+Plugin Name: DLINQ WPMU Site Maker 
 Plugin URI:  https://github.com/
 Description: Builds sites based on a set of things in Gravity Forms
 Version:     1.0
@@ -15,15 +15,19 @@ Text Domain: my-toolset
 defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 
 
-// add_action('wp_enqueue_scripts', 'prefix_load_scripts');
+function dlinq_team_added( $form, $entry_id, $original_entry){
+   var_dump($original_entry);
+}
 
-// function prefix_load_scripts() {                           
-//     $deps = array('jquery');
-//     $version= '1.0'; 
-//     $in_footer = true;    
-//     wp_enqueue_script('prefix-main-js', plugin_dir_url( __FILE__) . 'js/prefix-main.js', $deps, $version, $in_footer); 
-//     wp_enqueue_style( 'prefix-main-css', plugin_dir_url( __FILE__) . 'css/prefix-main.css');
-// }
+add_action( 'gform_after_update_entry_4', 'dlinq_team_added', 10, 3 );
+
+//after post creation write the created post ID to the form
+add_action( 'gform_after_create_post', 'dlinq_save_post_id', 10, 3 );
+
+function dlinq_save_post_id( $post_id, $entry, $form){
+   //23
+   rgar( $entry, '23' ) = $post_id;
+}
 
 function dlinq_blog_maker(){
    $domain =     $current_network = get_network();
@@ -52,6 +56,15 @@ function dlinq_blog_maker(){
 }
 
 add_shortcode( 'make-site', 'dlinq_blog_maker' );
+
+function dlinq_make_new_tracking_post($title, $site_id){
+   $args = array(
+      'post_title' => $title,
+      'post_category' => 'Spring 2022',
+      'post_content' => 'foo',
+   );
+   wp_insert_post($args);
+}
 
 
 /**
@@ -96,3 +109,78 @@ if ( ! function_exists('write_log')) {
 }
 
   //print("<pre>".print_r($a,true)."</pre>");
+
+//add custom taxonomies
+
+add_action( 'init', 'create_section_taxonomies', 0 );
+function create_section_taxonomies()
+{
+  // Add new taxonomy, NOT hierarchical (like tags)
+  $labels = array(
+    'name' => _x( 'Sections', 'taxonomy general name' ),
+    'singular_name' => _x( 'section', 'taxonomy singular name' ),
+    'search_items' =>  __( 'Search Sections' ),
+    'popular_items' => __( 'Popular Sections' ),
+    'all_items' => __( 'All Sections' ),
+    'parent_item' => null,
+    'parent_item_colon' => null,
+    'edit_item' => __( 'Edit Sections' ),
+    'update_item' => __( 'Update section' ),
+    'add_new_item' => __( 'Add New section' ),
+    'new_item_name' => __( 'New section' ),
+    'add_or_remove_items' => __( 'Add or remove Sections' ),
+    'choose_from_most_used' => __( 'Choose from the most used Sections' ),
+    'menu_name' => __( 'Sections' ),
+  );
+
+//registers taxonomy specific post types - default is just post
+  register_taxonomy('Sections',array('post'), array(
+    'hierarchical' => true,
+    'labels' => $labels,
+    'show_ui' => true,
+    'update_count_callback' => '_update_post_term_count',
+    'query_var' => true,
+    'rewrite' => array( 'slug' => 'section' ),
+    'show_in_rest'          => true,
+    'rest_base'             => 'section',
+    'rest_controller_class' => 'WP_REST_Terms_Controller',
+    'show_in_nav_menus' => true,    
+  ));
+}
+
+
+add_action( 'init', 'create_team_taxonomies', 0 );
+function create_team_taxonomies()
+{
+  // Add new taxonomy, NOT hierarchical (like tags)
+  $labels = array(
+    'name' => _x( 'Teams', 'taxonomy general name' ),
+    'singular_name' => _x( 'team', 'taxonomy singular name' ),
+    'search_items' =>  __( 'Search Teams' ),
+    'popular_items' => __( 'Popular Teams' ),
+    'all_items' => __( 'All Teams' ),
+    'parent_item' => null,
+    'parent_item_colon' => null,
+    'edit_item' => __( 'Edit Teams' ),
+    'update_item' => __( 'Update team' ),
+    'add_new_item' => __( 'Add New team' ),
+    'new_item_name' => __( 'New team' ),
+    'add_or_remove_items' => __( 'Add or remove Teams' ),
+    'choose_from_most_used' => __( 'Choose from the most used Teams' ),
+    'menu_name' => __( 'Teams' ),
+  );
+
+//registers taxonomy specific post types - default is just post
+  register_taxonomy('Teams',array('post'), array(
+    'hierarchical' => true,
+    'labels' => $labels,
+    'show_ui' => true,
+    'update_count_callback' => '_update_post_term_count',
+    'query_var' => true,
+    'rewrite' => array( 'slug' => 'team' ),
+    'show_in_rest'          => true,
+    'rest_base'             => 'team',
+    'rest_controller_class' => 'WP_REST_Terms_Controller',
+    'show_in_nav_menus' => true,    
+  ));
+}
