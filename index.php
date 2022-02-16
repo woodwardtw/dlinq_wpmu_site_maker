@@ -19,7 +19,7 @@ function dlinq_team_added( $form, $entry_id, $original_entry){
    $entry = GFAPI::get_entry( $entry_id );
    //var_dump($entry);
    $user_email = $entry['16'];
-   var_dump($user_email);
+   //var_dump($user_email);
    $team = $entry['17'];
    $team_slug = sanitize_title($team );
    $args = array(
@@ -39,7 +39,8 @@ function dlinq_team_added( $form, $entry_id, $original_entry){
       );
       wp_insert_post($args);
    }
-   dlinq_add_user($user_email);
+   $user_id = dlinq_add_user($user_email);
+   dlinq_blog_creation($team_slug, $user_id, $team);
 }
 
 add_action( 'gform_after_update_entry_4', 'dlinq_team_added', 10, 3 );
@@ -48,17 +49,34 @@ add_action( 'gform_after_update_entry_4', 'dlinq_team_added', 10, 3 );
 function dlinq_add_user($email){
    if (get_user_by('email', $email)){
       $user = get_user_by('email', $email);
-      $user_id = $user['ID'];
-      return $user_id;
+      $user_id = $user->ID;      
    } else {
       $chop = strpos($email,'@', 0);
       $username = substr($email, 0, $chop);
-      var_dump($username);
-      $new_user = wp_create_user($username, 'thispasswordisnotreal!4sure', $email);
+      //var_dump($username);
+      $user_id = wp_create_user($username, 'thispasswordisnotreal!4sure', $email);
    }
+   return $user_id;
 }
 
 
+function dlinq_blog_creation($slug, $user_id, $team){
+   if(get_sites(array( 'fields' => 'ids', 'path' => $slug))){
+      $sites = get_sites(array( 'fields' => 'ids', 'path' => $slug))[0];
+      $blog_id = $sites;
+      add_user_to_blog($blog_id, $user_id, 'administrator');
+   } else {
+      $args = array(
+      'domain' => 'multsitetwo.local',
+      'path' => sanitize_title($team),
+      // 'network_id' => '',
+      // 'registered' => '',
+      'user_id' => $user_id,
+      'title' => $team,      
+      );
+   }
+   $new_site = wp_insert_site($args);
+}
 
 
 
