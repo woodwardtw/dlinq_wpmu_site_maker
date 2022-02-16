@@ -16,21 +16,60 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 
 
 function dlinq_team_added( $form, $entry_id, $original_entry){
-   var_dump($original_entry);
+   $entry = GFAPI::get_entry( $entry_id );
+   //var_dump($entry);
+   $user_email = $entry['16'];
+   var_dump($user_email);
+   $team = $entry['17'];
+   $team_slug = sanitize_title($team );
+   $args = array(
+      'name'        => $team_slug,
+      'post_type'   => 'post',
+      'post_status' => 'publish',
+      'numberposts' => 1
+      );
+   $project = get_posts($args);
+   var_dump($project);
+   if(!$project){
+      //create the index post
+      $args = array(
+         'post_title' => $team,
+         'post_category' => array(26),
+         'post_status' => 'publish',
+      );
+      wp_insert_post($args);
+   }
+   dlinq_add_user($user_email);
 }
 
 add_action( 'gform_after_update_entry_4', 'dlinq_team_added', 10, 3 );
 
+
+function dlinq_add_user($email){
+   if (get_user_by('email', $email)){
+      $user = get_user_by('email', $email);
+      $user_id = $user['ID'];
+      return $user_id;
+   } else {
+      $chop = strpos($email,'@', 0);
+      $username = substr($email, 0, $chop);
+      var_dump($username);
+      $new_user = wp_create_user($username, 'thispasswordisnotreal!4sure', $email);
+   }
+}
+
+
+
+
+
+//probably all not needed but might be useful somewhere else
 //after post creation write the created post ID to the form
 add_action( 'gform_advancedpostcreation_post_after_creation', 'dlinq_save_post_id', 10, 4 );
 
 function dlinq_save_post_id( $post_id, $feed, $entry, $form){
-       
     $entry['23'] = $post_id;
-
     // Save the update
     $updated = GFAPI::update_entry( $entry );
-    var_dump($updated);
 
 }
 
