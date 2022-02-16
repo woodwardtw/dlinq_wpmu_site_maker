@@ -29,7 +29,7 @@ function dlinq_team_added( $form, $entry_id, $original_entry){
       'numberposts' => 1
       );
    $project = get_posts($args);
-   var_dump($project);
+   //var_dump($project);
    if(!$project){
       //create the index post
       $args = array(
@@ -54,17 +54,20 @@ function dlinq_add_user($email){
       $chop = strpos($email,'@', 0);
       $username = substr($email, 0, $chop);
       //var_dump($username);
-      $user_id = wp_create_user($username, 'thispasswordisnotreal!4sure', $email);
+      $user_id = wp_create_user($username, '!thispasswordisnotreal!4sure', $email);
    }
+  
    return $user_id;
 }
 
 
 function dlinq_blog_creation($slug, $user_id, $team){
-   if(get_sites(array( 'fields' => 'ids', 'path' => $slug))){
-      $sites = get_sites(array( 'fields' => 'ids', 'path' => $slug))[0];
+   if(get_sites(array( 'fields' => 'ids', 'path' => '/'. $slug . '/'))){
+      //var_dump('existing site');
+      $sites = get_sites(array( 'fields' => 'ids', 'path' => '/'. $slug . '/'))[0];
       $blog_id = $sites;
-      add_user_to_blog($blog_id, $user_id, 'administrator');
+      $admin = add_user_to_blog($blog_id, $user_id, 'administrator');
+      //var_dump($admin);
    } else {
       $args = array(
       'domain' => 'multsitetwo.local',
@@ -74,8 +77,42 @@ function dlinq_blog_creation($slug, $user_id, $team){
       'user_id' => $user_id,
       'title' => $team,      
       );
+      $new_site = wp_insert_site($args);
    }
-   $new_site = wp_insert_site($args);
+   
+   return $new_site;
+}
+
+//Team posts 
+add_filter( 'the_content', 'dlinq_associate_users', 1 );
+
+function dlinq_associate_users($content){
+   global $post;
+   if(in_category('team', $post->ID)){
+         $slug = $post->post_name;
+         $site_id = get_sites(array( 'fields' => 'ids', 'path' => '/'. $slug . '/'))[0];
+         $args = array(
+               'blog_id' => $site_id,
+            );
+         //site information
+         $current_blog_details = get_blog_details( array( 'blog_id' => $site_id ) );
+         //var_dump($current_blog_details);
+         echo "<h2>Team Name</h2><a href='{$current_blog_details->site_url}' class='team-link'>{$current_blog_details->blogname}</a>";
+
+         //users from the other blog
+         $users = get_users($args);
+         //var_dump($users);
+         if($users){
+               echo "<h2>Team Members</h2><ol>";
+            foreach($users as $user) {
+               echo "<li>{$user->display_name}</li>";
+            }
+               echo "</ul>";
+         }
+   
+   }
+  
+   return $content;
 }
 
 
