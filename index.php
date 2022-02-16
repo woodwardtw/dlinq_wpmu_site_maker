@@ -21,7 +21,9 @@ function dlinq_team_added( $form, $entry_id, $original_entry){
    $user_email = $entry['16'];
    //var_dump($user_email);
    $team = $entry['17'];
-   $team_slug = sanitize_title($team );
+   $tag = $entry['19'];//semester
+   $section = get_term_by('name', $entry['22'], 'sections');
+   $team_slug = sanitize_title($team );   
    $args = array(
       'name'        => $team_slug,
       'post_type'   => 'post',
@@ -29,22 +31,32 @@ function dlinq_team_added( $form, $entry_id, $original_entry){
       'numberposts' => 1
       );
    $project = get_posts($args);
+   $team_cat_id = get_category_by_slug('team')->term_id;
    //var_dump($project);
    if(!$project){
       //create the index post
       $args = array(
          'post_title' => $team,
-         'post_category' => array(26),
+         'post_category' => array($team_cat_id),
          'post_status' => 'publish',
+         'tags_input' => array($tag),
+         'tax_input' => array(
+            'section' => array($section),
+         ),
       );
       wp_insert_post($args);
    }
    $user_id = dlinq_add_user($user_email);
    dlinq_blog_creation($team_slug, $user_id, $team);
 }
+var_dump(get_term_by('slug', 'a', 'Sections'));
+var_dump(get_term_by('slug', 'a', 'Section'));
+var_dump(get_term_by('slug', 'a', 'sections'));
+var_dump(get_term_by('slug', 'a'));
+var_dump(get_term_by( 'slug', 'uncategorized'));
 
-add_action( 'gform_after_update_entry_4', 'dlinq_team_added', 10, 3 );
-
+add_action( 'gform_after_update_entry_1', 'dlinq_team_added', 10, 3 );
+add_action( 'gform_after_update_entry_4', 'dlinq_team_added', 10, 3 );//DELETE THIS***********
 
 function dlinq_add_user($email){
    if (get_user_by('email', $email)){
@@ -53,8 +65,9 @@ function dlinq_add_user($email){
    } else {
       $chop = strpos($email,'@', 0);
       $username = substr($email, 0, $chop);
+      $pw = wp_generate_password();
       //var_dump($username);
-      $user_id = wp_create_user($username, '!thispasswordisnotreal!4sure', $email);
+      $user_id = wp_create_user($username, $pw, $email);
    }
   
    return $user_id;
@@ -69,8 +82,10 @@ function dlinq_blog_creation($slug, $user_id, $team){
       $admin = add_user_to_blog($blog_id, $user_id, 'administrator');
       //var_dump($admin);
    } else {
+      $current_network = get_network();
+      $domain = $current_network->domain;
       $args = array(
-      'domain' => 'multsitetwo.local',
+      'domain' => $domain,
       'path' => sanitize_title($team),
       // 'network_id' => '',
       // 'registered' => '',
@@ -96,8 +111,7 @@ function dlinq_associate_users($content){
             );
          //site information
          $current_blog_details = get_blog_details( array( 'blog_id' => $site_id ) );
-         //var_dump($current_blog_details);
-         echo "<h2>Team Name</h2><a href='{$current_blog_details->site_url}' class='team-link'>{$current_blog_details->blogname}</a>";
+         echo "<h2>Team Name</h2><a href='{$current_blog_details->siteurl}' class='team-link'>{$current_blog_details->blogname}</a>";
 
          //users from the other blog
          $users = get_users($args);
@@ -105,6 +119,7 @@ function dlinq_associate_users($content){
          if($users){
                echo "<h2>Team Members</h2><ol>";
             foreach($users as $user) {
+               //var_dump($user);
                echo "<li>{$user->display_name}</li>";
             }
                echo "</ul>";
@@ -115,9 +130,34 @@ function dlinq_associate_users($content){
    return $content;
 }
 
+function dlinq_team_title_adjust( $title, $id ) {
+   global $post;
+    if ( in_category('team', $id ) ) {
+         $slug = $post->post_name;
+         $site_id = get_sites(array( 'fields' => 'ids', 'path' => '/'. $slug . '/'))[0];
+         $args = array(
+               'blog_id' => $site_id,
+            );
+         //site information
+         $current_blog_details = get_blog_details( array( 'blog_id' => $site_id ) );
+         $new_title = $current_blog_details->blogname;
+        return $new_title; 
+    }
+ 
+    return $title;
+}
+add_filter( 'the_title', 'dlinq_team_title_adjust', 10, 2 );
+
+
 
 
 //probably all not needed but might be useful somewhere else
+//
+//
+//
+//
+//
+//
 //after post creation write the created post ID to the form
 add_action( 'gform_advancedpostcreation_post_after_creation', 'dlinq_save_post_id', 10, 4 );
 
