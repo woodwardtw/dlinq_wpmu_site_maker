@@ -49,9 +49,18 @@ function dlinq_team_added( $form, $entry_id, $original_entry){
    }
    $user_id = dlinq_add_user($user_email);
    dlinq_blog_creation($team_slug, $user_id, $team);
-   dlinq_add_team_to_intro($team_slug, );
+   //dlinq_add_team_to_intro($team_slug);
+   dlinq_add_team_to_posts($entry, $team);
 }
 
+
+function dlinq_add_team_to_posts($entry, $team){
+   $try = gform_get_meta( $entry['id'], 'gravityformsadvancedpostcreation_post_id' );
+   foreach($try as $post){
+      $post_id = $post['post_id'];
+      wp_set_post_terms( $post_id, $team, 'team');
+   }
+}
 
 add_action( 'gform_after_update_entry_1', 'dlinq_team_added', 10, 3 );
 add_action( 'gform_after_update_entry_4', 'dlinq_team_added', 10, 3 );//DELETE THIS***********
@@ -67,11 +76,10 @@ function dlinq_add_user($email){
       //var_dump($username);
       $user_id = wp_create_user($username, $pw, $email);
    }
-  
    return $user_id;
 }
 
-
+//make the network site 
 function dlinq_blog_creation($slug, $user_id, $team){
    if(get_sites(array( 'fields' => 'ids', 'path' => '/'. $slug . '/'))){
       //var_dump('existing site');
@@ -92,11 +100,11 @@ function dlinq_blog_creation($slug, $user_id, $team){
       );
       $new_site = wp_insert_site($args);
    }
-   
-   return $new_site;
 }
 
 //Team posts 
+
+//gets the users from the network site and display in the post body
 add_filter( 'the_content', 'dlinq_associate_users', 1 );
 
 function dlinq_associate_users($content){
@@ -128,6 +136,8 @@ function dlinq_associate_users($content){
    return $content;
 }
 
+
+//fix title if the network site changes the title after initial team creation
 function dlinq_team_title_adjust( $title, $id ) {
    global $post;
     if ( in_category('team', $post->ID ) ) {
@@ -156,26 +166,6 @@ add_filter( 'the_title', 'dlinq_team_title_adjust', 10, 2 );
 //
 //
 //
-//after post creation write the created post ID to the form
-add_action( 'gform_advancedpostcreation_post_after_creation', 'dlinq_save_post_id', 10, 4 );
-
-function dlinq_save_post_id( $post_id, $feed, $entry, $form){
-   //
-    $post_ids = array();
-    var_dump($post_ids);
-    //$existing = GFAPI::get_field( $form, '23' );
-    $existing = $entry['23'];
-    var_dump($existing);
-    var_dump($post_id);
-    array_push($post_ids, $existing);
-    array_push($post_ids, $post_id);
-    //var_dump($post_ids);
-    $the_ids = implode(',', $post_ids);
-    $entry['23'] = $the_ids;
-   // Save the update
-    $updated = GFAPI::update_entry( $entry );
-
-}
 
 
 
