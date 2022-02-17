@@ -49,11 +49,7 @@ function dlinq_team_added( $form, $entry_id, $original_entry){
    $user_id = dlinq_add_user($user_email);
    dlinq_blog_creation($team_slug, $user_id, $team);
 }
-var_dump(get_term_by('slug', 'a', 'Sections'));
-var_dump(get_term_by('slug', 'a', 'Section'));
-var_dump(get_term_by('slug', 'a', 'sections'));
-var_dump(get_term_by('slug', 'a'));
-var_dump(get_term_by( 'slug', 'uncategorized'));
+
 
 add_action( 'gform_after_update_entry_1', 'dlinq_team_added', 10, 3 );
 add_action( 'gform_after_update_entry_4', 'dlinq_team_added', 10, 3 );//DELETE THIS***********
@@ -132,7 +128,7 @@ function dlinq_associate_users($content){
 
 function dlinq_team_title_adjust( $title, $id ) {
    global $post;
-    if ( in_category('team', $id ) ) {
+    if ( in_category('team', $post->ID ) ) {
          $slug = $post->post_name;
          $site_id = get_sites(array( 'fields' => 'ids', 'path' => '/'. $slug . '/'))[0];
          $args = array(
@@ -251,42 +247,45 @@ if ( ! function_exists('write_log')) {
 
 //add custom taxonomies
 
-add_action( 'init', 'create_section_taxonomies', 0 );
-function create_section_taxonomies()
-{
-  // Add new taxonomy, NOT hierarchical (like tags)
-  $labels = array(
-    'name' => _x( 'Sections', 'taxonomy general name' ),
-    'singular_name' => _x( 'section', 'taxonomy singular name' ),
-    'search_items' =>  __( 'Search Sections' ),
-    'popular_items' => __( 'Popular Sections' ),
-    'all_items' => __( 'All Sections' ),
-    'parent_item' => null,
-    'parent_item_colon' => null,
-    'edit_item' => __( 'Edit Sections' ),
-    'update_item' => __( 'Update section' ),
-    'add_new_item' => __( 'Add New section' ),
-    'new_item_name' => __( 'New section' ),
-    'add_or_remove_items' => __( 'Add or remove Sections' ),
-    'choose_from_most_used' => __( 'Choose from the most used Sections' ),
-    'menu_name' => __( 'Sections' ),
-  );
+// Register Custom Taxonomy
+function dlinq_section_taxonomy() {
 
-//registers taxonomy specific post types - default is just post
-  register_taxonomy('Sections',array('post'), array(
-    'hierarchical' => true,
-    'labels' => $labels,
-    'show_ui' => true,
-    'update_count_callback' => '_update_post_term_count',
-    'query_var' => true,
-    'rewrite' => array( 'slug' => 'section' ),
-    'show_in_rest'          => true,
-    'rest_base'             => 'section',
-    'rest_controller_class' => 'WP_REST_Terms_Controller',
-    'show_in_nav_menus' => true,    
-  ));
+	$labels = array(
+		'name'                       => _x( 'Sections', 'Taxonomy General Name', 'text_domain' ),
+		'singular_name'              => _x( 'Section', 'Taxonomy Singular Name', 'text_domain' ),
+		'menu_name'                  => __( 'Section', 'text_domain' ),
+		'all_items'                  => __( 'All sections', 'text_domain' ),
+		'parent_item'                => __( '', 'text_domain' ),
+		'parent_item_colon'          => __( '', 'text_domain' ),
+		'new_item_name'              => __( 'New Section', 'text_domain' ),
+		'add_new_item'               => __( 'Add New Section', 'text_domain' ),
+		'edit_item'                  => __( 'Edit Section', 'text_domain' ),
+		'update_item'                => __( 'Update Section', 'text_domain' ),
+		'view_item'                  => __( 'View Section', 'text_domain' ),
+		'separate_items_with_commas' => __( 'Separate sections with commas', 'text_domain' ),
+		'add_or_remove_items'        => __( 'Add or remove sections', 'text_domain' ),
+		'choose_from_most_used'      => __( 'Choose from the most used', 'text_domain' ),
+		'popular_items'              => __( 'Popular Sections', 'text_domain' ),
+		'search_items'               => __( 'Search Sections', 'text_domain' ),
+		'not_found'                  => __( 'Not Found', 'text_domain' ),
+		'no_terms'                   => __( 'No sectioins', 'text_domain' ),
+		'items_list'                 => __( 'Items list', 'text_domain' ),
+		'items_list_navigation'      => __( 'Items list navigation', 'text_domain' ),
+	);
+	$args = array(
+		'labels'                     => $labels,
+		'hierarchical'               => false,
+		'public'                     => true,
+		'show_ui'                    => true,
+		'show_admin_column'          => true,
+		'show_in_nav_menus'          => true,
+		'show_tagcloud'              => true,
+		'show_in_rest'               => true,
+	);
+	register_taxonomy( 'section', array( 'post' ), $args );
+
 }
-
+add_action( 'init', 'dlinq_section_taxonomy', 0 );
 
 add_action( 'init', 'create_team_taxonomies', 0 );
 function create_team_taxonomies()
@@ -323,3 +322,15 @@ function create_team_taxonomies()
     'show_in_nav_menus' => true,    
   ));
 }
+
+
+
+//var_dump(get_terms(  array('taxonomy' => 'category','hide_empty' => false) ));
+
+
+function dlinq_term_tester(){
+   var_dump(get_term_by('slug', 'a', 'section'));
+   var_dump(get_term(35));
+   }
+
+add_shortcode( 'cat-test', 'dlinq_term_tester' );
