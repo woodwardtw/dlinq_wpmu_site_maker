@@ -158,58 +158,6 @@ add_filter( 'the_title', 'dlinq_team_title_adjust', 10, 2 );
 
 
 
-
-//probably all not needed but might be useful somewhere else
-//
-//
-//
-//
-//
-//
-
-
-
-add_shortcode( 'make-site', 'dlinq_blog_maker' );
-
-function dlinq_make_new_tracking_post($title, $site_id){
-   $args = array(
-      'post_title' => $title,
-      'post_category' => 'Spring 2022',
-      'post_content' => 'foo',
-   );
-   wp_insert_post($args);
-}
-
-
-/**
- * Retrieves a sites ID given its (subdomain or directory) slug.
- *
- * @since MU
- * @since 4.7.0 Converted to use get_sites().
- *
- * @param string $slug A site's slug.
- * @return int|null The site ID, or null if no site is found for the given slug.
- */
-function dlinq_get_id_from_blogname($slug){
-    $current_network = get_network();
-    $slug = trim($slug, '/');
-    if (is_subdomain_install()) {
-        $domain = $slug . '.' . preg_replace('|^www\\.|', '', $current_network->domain);
-        $path = $current_network->path;
-    } else {
-        $domain = $current_network->domain;
-        $path = $current_network->path . $slug . '/';
-    }
-    $site_ids = get_sites(array('number' => 1, 'fields' => 'ids', 'domain' => $domain, 'path' => $path));
-
-    if (empty($site_ids)) {
-        return null;
-    }
-    return array_shift($site_ids);
-}
-
-//blog_maker();
-
 //LOGGER -- like frogger but more useful
 
 if ( ! function_exists('write_log')) {
