@@ -49,6 +49,7 @@ function dlinq_team_added( $form, $entry_id, $original_entry){
    }
    $user_id = dlinq_add_user($user_email);
    dlinq_blog_creation($team_slug, $user_id, $team);
+   dlinq_add_team_to_intro($team_slug, );
 }
 
 
@@ -159,37 +160,24 @@ add_filter( 'the_title', 'dlinq_team_title_adjust', 10, 2 );
 add_action( 'gform_advancedpostcreation_post_after_creation', 'dlinq_save_post_id', 10, 4 );
 
 function dlinq_save_post_id( $post_id, $feed, $entry, $form){
-    $entry['23'] = $post_id;
-    // Save the update
+   //
+    $post_ids = array();
+    var_dump($post_ids);
+    //$existing = GFAPI::get_field( $form, '23' );
+    $existing = $entry['23'];
+    var_dump($existing);
+    var_dump($post_id);
+    array_push($post_ids, $existing);
+    array_push($post_ids, $post_id);
+    //var_dump($post_ids);
+    $the_ids = implode(',', $post_ids);
+    $entry['23'] = $the_ids;
+   // Save the update
     $updated = GFAPI::update_entry( $entry );
 
 }
 
-function dlinq_blog_maker(){
-   $domain =     $current_network = get_network();
-   //var_dump($current_network);
-   $team = 'Team Shrimp Heads';
-   $path = $current_network->domain . '/' . sanitize_title( $team ) . '/';
-   $user_id = 13;
-   $sites = get_sites(array( 'fields' => 'ids', 'path' => '/team-shrimp-heads/'))[0];
-   var_dump($sites);
-   if($sites > 0){
-      $blog_id = $sites;
-      add_user_to_blog($blog_id, 11, 'administrator');
-   } else {
-      $args = array(
-      'domain' => 'multsitetwo.local',
-      'path' => sanitize_title($team),
-      // 'network_id' => '',
-      // 'registered' => '',
-      'user_id' => $user_id,
-      'title' => $team,      
-   );
-   $new_site = wp_insert_site($args);
-   return 'foo';
-   }
-   
-}
+
 
 add_shortcode( 'make-site', 'dlinq_blog_maker' );
 
@@ -310,8 +298,8 @@ function create_team_taxonomies()
   );
 
 //registers taxonomy specific post types - default is just post
-  register_taxonomy('Teams',array('post'), array(
-    'hierarchical' => true,
+  register_taxonomy('team',array('post'), array(
+    'hierarchical' => false,
     'labels' => $labels,
     'show_ui' => true,
     'update_count_callback' => '_update_post_term_count',
