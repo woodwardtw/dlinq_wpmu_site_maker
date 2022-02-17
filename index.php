@@ -22,7 +22,8 @@ function dlinq_team_added( $form, $entry_id, $original_entry){
    //var_dump($user_email);
    $team = $entry['17'];
    $tag = $entry['19'];//semester
-   $section = get_term_by('name', $entry['22'], 'sections');
+   $section = get_term_by('name', $entry['22'], 'section')->term_id;
+   //get_term_by('name', 'a', 'section')
    $team_slug = sanitize_title($team );   
    $args = array(
       'name'        => $team_slug,
@@ -323,14 +324,3 @@ function create_team_taxonomies()
   ));
 }
 
-
-
-//var_dump(get_terms(  array('taxonomy' => 'category','hide_empty' => false) ));
-
-
-function dlinq_term_tester(){
-   var_dump(get_term_by('slug', 'a', 'section'));
-   var_dump(get_term(35));
-   }
-
-add_shortcode( 'cat-test', 'dlinq_term_tester' );
