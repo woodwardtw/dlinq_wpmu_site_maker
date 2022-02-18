@@ -75,9 +75,35 @@ function dlinq_add_user($email){
       $pw = wp_generate_password();
       //var_dump($username);
       $user_id = wp_create_user($username, $pw, $email);
-      wp_new_user_notification( $user_id, $random_password);
+      var_dump($user_id);
+      $notification = wp_send_new_user_notifications( $user_id, 'both');
    }
    return $user_id;
+}
+
+/**
+ * Custom register email
+ */
+add_filter( 'wp_new_user_notification_email', 'custom_wp_new_user_notification_email', 10, 3 );
+function custom_wp_new_user_notification_email( $wp_new_user_notification_email, $user, $blogname ) {
+ 
+   //  $user_login = stripslashes( $user->user_login );
+   //  $user_email = stripslashes( $user->user_email );
+   //  $login_url  = wp_login_url();
+   //  $message  = __( 'Hi there,' ) . "/r/n/r/n";
+   //  $message .= sprintf( __( "Welcome to %s! Here's how to log in:" ), get_option('blogname') ) . "/r/n/r/n";
+   //  $message .= wp_login_url() . "/r/n";
+   //  $message .= sprintf( __('Username: %s'), $user_login ) . "/r/n";
+   //  $message .= sprintf( __('Email: %s'), $user_email ) . "/r/n";
+   //  $message .= __( 'Password: The one you entered in the registration form. (For security reason, we save encripted password)' ) . "/r/n/r/n";
+   //  $message .= sprintf( __('If you have any problems, please contact me at %s.'), get_option('admin_email') ) . "/r/n/r/n";
+   //  $message .= __( 'bye!' );
+ 
+    $wp_new_user_notification_email['subject'] = sprintf( '[%s] Your Middlebury TRLM Site Account', $blogname );
+    //$wp_new_user_notification_email['headers'] = array('Content-Type: text/html; charset=UTF-8');
+    //$wp_new_user_notification_email['message'] = $message;
+ 
+    return $wp_new_user_notification_email;
 }
 
 //make the network site 
@@ -141,7 +167,8 @@ function dlinq_associate_users($content){
 //fix title if the network site changes the title after initial team creation
 function dlinq_team_title_adjust( $title, $id ) {
    global $post;
-    if ( in_category('team', $post->ID ) ) {
+   if($post){
+         if ( in_category('team', $post->ID ) ) {
          $slug = $post->post_name;
          $site_id = get_sites(array( 'fields' => 'ids', 'path' => '/'. $slug . '/'))[0];
          $args = array(
@@ -151,9 +178,13 @@ function dlinq_team_title_adjust( $title, $id ) {
          $current_blog_details = get_blog_details( array( 'blog_id' => $site_id ) );
          $new_title = $current_blog_details->blogname;
         return $new_title; 
-    }
+      }
  
     return $title;
+
+   }
+   return $title;
+
 }
 add_filter( 'the_title', 'dlinq_team_title_adjust', 10, 2 );
 
