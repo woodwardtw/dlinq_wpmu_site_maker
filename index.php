@@ -251,3 +251,39 @@ function create_team_taxonomies()
   ));
 }
 
+
+add_action( 'init', 'create_modality_taxonomies', 0 );
+function create_modality_taxonomies()
+{
+  // Add new taxonomy, NOT hierarchical (like tags)
+  $labels = array(
+    'name' => _x( 'Modalities', 'taxonomy general name' ),
+    'singular_name' => _x( 'Modality', 'taxonomy singular name' ),
+    'search_items' =>  __( 'Search Modalities' ),
+    'popular_items' => __( 'Popular Modalities' ),
+    'all_items' => __( 'All Modalities' ),
+    'parent_item' => null,
+    'parent_item_colon' => null,
+    'edit_item' => __( 'Edit Modality' ),
+    'update_item' => __( 'Update modality' ),
+    'add_new_item' => __( 'Add New modality' ),
+    'new_item_name' => __( 'New modality' ),
+    'add_or_remove_items' => __( 'Add or remove Modalities' ),
+    'choose_from_most_used' => __( 'Choose from the most used Modalities' ),
+    'menu_name' => __( 'Modalities' ),
+  );
+
+//registers taxonomy specific post types - default is just post
+  register_taxonomy('modality',array('post'), array(
+    'hierarchical' => false,
+    'labels' => $labels,
+    'show_ui' => true,
+    'update_count_callback' => '_update_post_term_count',
+    'query_var' => true,
+    'rewrite' => array( 'slug' => 'modality' ),
+    'show_in_rest'          => true,
+    'rest_base'             => 'modality',
+    'rest_controller_class' => 'WP_REST_Terms_Controller',
+    'show_in_nav_menus' => true,    
+  ));
+}
