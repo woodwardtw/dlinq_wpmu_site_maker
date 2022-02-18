@@ -75,6 +75,7 @@ function dlinq_add_user($email){
       $pw = wp_generate_password();
       //var_dump($username);
       $user_id = wp_create_user($username, $pw, $email);
+      wp_new_user_notification( $user_id, $random_password);
    }
    return $user_id;
 }
