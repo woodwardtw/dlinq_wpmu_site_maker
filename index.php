@@ -54,6 +54,26 @@ function dlinq_team_added( $form, $entry_id, $original_entry){
 }
 
 
+function dlinq_add_featured_img($content){
+   if(has_post_thumbnail()){
+      $image = get_the_post_thumbnail(get_the_id(),'large');
+      return $image . $content;
+   }
+   return $content;
+ 
+}
+
+add_filter( 'the_content', 'dlinq_add_featured_img', 1 );
+
+
+// function dlinq_section_assigner( $post_id, $feed, $entry, $form ){
+//       $section = $entry['22'];
+//       wp_set_post_terms( $post_id, $section, 'section');
+// }
+// add_action( 'gform_advancedpostcreation_post_after_creation_1', 'dlinq_section_assigner', 10, 4 );
+// add_action( 'gform_advancedpostcreation_post_after_creation_4', 'dlinq_section_assigner', 10, 4 );
+
+
 function dlinq_add_team_to_posts($entry, $team){
    $try = gform_get_meta( $entry['id'], 'gravityformsadvancedpostcreation_post_id' );
    foreach($try as $post){
@@ -144,13 +164,13 @@ function dlinq_associate_users($content){
             );
          //site information
          $current_blog_details = get_blog_details( array( 'blog_id' => $site_id ) );
-         echo "<h2>Team Name</h2><a href='{$current_blog_details->siteurl}' class='team-link'>{$current_blog_details->blogname}</a>";
+         echo "<a href='{$current_blog_details->siteurl}' class='team-link'>{$current_blog_details->blogname}</a>";
 
          //users from the other blog
          $users = get_users($args);
          //var_dump($users);
          if($users){
-               echo "<h2>Team Members</h2><ol>";
+               echo "<h2 class='team-members'>Team Members</h2><ol id='team-list'>";
             foreach($users as $user) {
                //var_dump($user);
                echo "<li>{$user->display_name}</li>";
@@ -170,7 +190,6 @@ function dlinq_team_title_adjust( $title, $id ) {
    if($post){
          if ( in_category('team', $id ) ) {
          $slug = get_post_field( 'post_name', get_post($id) );;
-         var_dump($slug);
          $site_id = get_sites(array( 'fields' => 'ids', 'path' => '/'. $slug . '/'))[0];
          $args = array(
                'blog_id' => $site_id,
