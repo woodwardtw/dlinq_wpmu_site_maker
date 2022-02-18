@@ -168,8 +168,9 @@ function dlinq_associate_users($content){
 function dlinq_team_title_adjust( $title, $id ) {
    global $post;
    if($post){
-         if ( in_category('team', $post->ID ) ) {
-         $slug = $post->post_name;
+         if ( in_category('team', $id ) ) {
+         $slug = get_post_field( 'post_name', get_post($id) );;
+         var_dump($slug);
          $site_id = get_sites(array( 'fields' => 'ids', 'path' => '/'. $slug . '/'))[0];
          $args = array(
                'blog_id' => $site_id,
