@@ -95,7 +95,6 @@ function dlinq_add_user($email){
       $pw = wp_generate_password();
       //var_dump($username);
       $user_id = wp_create_user($username, $pw, $email);
-      var_dump($user_id);
       $notification = wp_send_new_user_notifications( $user_id, 'both');
    }
    return $user_id;
@@ -189,15 +188,18 @@ function dlinq_team_title_adjust( $title, $id ) {
    global $post;
    if($post){
          if ( in_category('team', $id ) ) {
-         $slug = get_post_field( 'post_name', get_post($id) );;
-         $site_id = get_sites(array( 'fields' => 'ids', 'path' => '/'. $slug . '/'))[0];
-         $args = array(
+         $slug = get_post_field( 'post_name', get_post($id) );
+         if(get_sites(array( 'fields' => 'ids', 'path' => '/'. $slug . '/'))){
+             $site_id = get_sites(array( 'fields' => 'ids', 'path' => '/'. $slug . '/'))[0];
+             $args = array(
                'blog_id' => $site_id,
             );
-         //site information
-         $current_blog_details = get_blog_details( array( 'blog_id' => $site_id ) );
-         $new_title = $current_blog_details->blogname;
-        return $new_title; 
+               //site information
+               $current_blog_details = get_blog_details( array( 'blog_id' => $site_id ) );
+               $new_title = $current_blog_details->blogname;
+               return $new_title;    
+         }
+        
       }
  
     return $title;
