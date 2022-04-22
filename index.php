@@ -14,6 +14,14 @@ Text Domain: my-toolset
 */
 defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 
+add_action('wp_enqueue_scripts', 'dlinq_ssr_load_scripts');
+
+function dlinq_ssr_load_scripts() {                           
+    $deps = array('jquery');
+    $version= '1.0'; 
+    $in_footer = true;    
+    wp_enqueue_script('dlinq-sitemaker-js', plugin_dir_url( __FILE__) . 'js/dlinq_wpmu_site_maker.js', $deps, $version, $in_footer); 
+}
 
 function dlinq_team_added( $form, $entry_id, $original_entry){
    $entry = GFAPI::get_entry( $entry_id );
