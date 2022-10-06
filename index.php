@@ -348,3 +348,40 @@ function create_modality_taxonomies()
     'show_in_nav_menus' => true,    
   ));
 }
+
+//let in the iframes 
+
+function allow_iframes_for_editor( $allowed_tags ){
+    
+   $allowed_tags['iframe'] = array(
+      'align' => true,
+      'allow' => true,
+      'allowfullscreen' => true,
+      'class' => true,
+      'frameborder' => true,
+      'height' => true,
+      'id' => true,
+      'marginheight' => true,
+      'marginwidth' => true,
+      'name' => true,
+      'scrolling' => true,
+      'src' => true,
+      'style' => true,
+      'width' => true,
+      'allowFullScreen' => true,
+      'class' => true,
+      'frameborder' => true,
+      'height' => true,
+      'mozallowfullscreen' => true,
+      'src' => true,
+      'title' => true,
+      'webkitAllowFullScreen' => true,
+      'width' => true
+   );
+    
+    if ( current_user_can('editor') ) {
+      return $allowed_tags;  
+    }
+}
+
+add_filter( 'wp_kses_allowed_html', allow_iframes_for_editor, 1 );
